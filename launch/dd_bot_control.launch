@@ -1,0 +1,20 @@
+<launch>
+
+  <param name="robot_description" textfile="$(find dd_bot)/dd_bot_description/urdf/dd_bot.urdf"/>
+
+  <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find dd_bot)/dd_bot_control/config/dd_bot_control.yaml" command="load"/>
+
+  <!-- load the controllers -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+    output="screen" ns="/dd_bot" args="left_wheel_hinge_effort_controller right_wheel_hinge_effort_controller joint_state_controller"/>
+
+  <node name="twd_velocity_controller" pkg="dd_bot" type="twd_velocity_controller" respawn="false" output="screen" />
+
+  <!-- convert joint states to TF transforms for rviz, etc -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+    respawn="false" output="screen">
+    <remap from="/joint_states" to="/dd_bot/joint_states" />
+  </node>
+
+</launch>

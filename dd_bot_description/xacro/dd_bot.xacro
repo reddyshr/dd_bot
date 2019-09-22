@@ -1,0 +1,210 @@
+<?xml version='1.0'?>
+<robot name="dd_bot" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="chassis_x_dim" value="0.5" />
+  <xacro:property name="chassis_y_dim" value="0.3" />
+  <xacro:property name="chassis_z_dim" value="0.1" />
+  <xacro:property name="chassis_mass" value="5.0" />
+
+  <xacro:property name="wheel_radius" value="0.1" />
+  <xacro:property name="wheel_height" value="0.05" />
+  <xacro:property name="wheel_mass" value="1.0" />
+
+  <xacro:property name="caster_radius" value="${(wheel_radius - chassis_z_dim/2)/2}" />
+  <xacro:property name="caster_mass" value="1.0" />
+
+  <xacro:macro name="wheel_inertial" params="m r h">
+    <inertial>
+      <mass value="${m}" />
+      <inertia ixx="${(1/12)*m*h*h + (1/4)*m*r*r}" ixy ="0.0" ixz ="0.0" iyy="${(1/2)*m*r*r}" iyz="0.0" izz="${(1/12)*m*h*h + (1/4)*m*r*r}" />
+    </inertial>
+  </xacro:macro>
+
+  <xacro:macro name="wheel_visual" params="r h">
+    <visual>
+      <geometry>
+        <cylinder length="${h}" radius="${r}"/>
+      </geometry>
+      <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+    </visual>
+  </xacro:macro>
+
+  <xacro:macro name="wheel_collision" params="r h">
+    <collision>
+      <geometry>
+        <cylinder length="${h}" radius="${r}"/>
+      </geometry>
+      <origin rpy="0 1.5707 1.5707" xyz="0 0 0"/>
+    </collision>
+  </xacro:macro>
+
+  <xacro:macro name="caster_inertial" params="m r">
+    <inertial>
+      <mass value="${m}" />
+      <inertia ixx="${(2/5)*m*r*r}" ixy ="0.0" ixz ="0.0" iyy="${(2/5)*m*r*r}" iyz="0.0" izz="${(2/5)*m*r*r}" />
+    </inertial>
+  </xacro:macro>
+
+  <xacro:macro name="caster_visual" params="r">
+    <visual>
+      <geometry>
+        <sphere radius="${r}"/>
+      </geometry>
+      <origin xyz="0 0 0"/>
+    </visual>
+  </xacro:macro>
+
+  <xacro:macro name="caster_collision" params="r">
+    <collision>
+      <geometry>
+        <sphere radius="${r}"/>
+      </geometry>
+      <origin xyz="0 0 0"/>
+    </collision>
+  </xacro:macro>
+
+  <xacro:macro name="chassis_inertial" params="m x y z">
+    <inertial>
+      <mass value="${m}" />
+      <inertia ixx="${(1/12)*m*(y*y + z*z)}" ixy ="0.0" ixz ="0.0" iyy="${(1/12)*m*(x*x + z*z)}" iyz="0.0" izz="${(1/12)*m*(x*x + y*y)}" />
+    </inertial>
+  </xacro:macro>
+
+  <xacro:macro name="chassis_visual" params="x y z z_disp">
+    <visual>
+      <geometry>
+        <box size="${x} ${y} ${z}"/>
+      </geometry>
+      <origin xyz="0 0 ${z_disp}"/>
+    </visual>
+  </xacro:macro>
+
+  <xacro:macro name="chassis_collision" params="x y z z_disp">
+    <collision>
+      <geometry>
+        <box size="${x} ${y} ${z}"/>
+      </geometry>
+      <origin xyz="0 0 ${z_disp}"/>
+    </collision>
+  </xacro:macro>
+
+  <link name="base_link">
+    <xacro:chassis_visual x="${chassis_x_dim}" y="${chassis_y_dim}" z="${chassis_z_dim}" z_disp="${wheel_radius}" />
+    <xacro:chassis_inertial m="${chassis_mass}" x="${chassis_x_dim}" y="${chassis_y_dim}" z="${chassis_z_dim}"/>
+    <xacro:chassis_collision x="${chassis_x_dim}" y="${chassis_y_dim}" z="${chassis_z_dim}" z_disp="${wheel_radius}" />
+  </link>
+
+  <link name="left_wheel">
+    <xacro:wheel_visual r="${wheel_radius}" h="${wheel_height}" />
+    <xacro:wheel_inertial m="${wheel_mass}" r="${wheel_radius}" h="${wheel_height}" />
+    <xacro:wheel_collision r="${wheel_radius}" h="${wheel_height}" />
+  </link>
+ 
+  <link name="right_wheel">
+    <xacro:wheel_visual r="${wheel_radius}" h="${wheel_height}" />
+    <xacro:wheel_inertial m="${wheel_mass}" r="${wheel_radius}" h="${wheel_height}" />
+    <xacro:wheel_collision r="${wheel_radius}" h="${wheel_height}" />
+  </link>
+
+  <link name="left_caster_wheel">
+    <xacro:caster_visual r="${caster_radius}" />
+    <xacro:caster_inertial m="${caster_mass}" r="${caster_radius}" />
+    <xacro:caster_collision r="${caster_radius}" />
+  </link>
+
+  <link name="right_caster_wheel">
+    <xacro:caster_visual r="${caster_radius}" />
+    <xacro:caster_inertial m="${caster_mass}" r="${caster_radius}" />
+    <xacro:caster_collision r="${caster_radius}" />
+  </link>
+
+  <joint name="left_caster_hinge" type="fixed">
+    <child link="left_caster_wheel"/>
+    <parent link="base_link"/>
+    <origin rpy="0 0 0" xyz="${chassis_x_dim/2 - caster_radius} ${chassis_y_dim/2 - caster_radius} ${caster_radius}"/>
+  </joint>
+
+  <joint name="right_caster_hinge" type="fixed">
+    <child link="right_caster_wheel"/>
+    <parent link="base_link"/>
+    <origin rpy="0 0 0" xyz="${chassis_x_dim/2 - caster_radius} ${-(chassis_y_dim/2 - caster_radius)} ${caster_radius}"/>
+  </joint>
+
+  <joint name="left_wheel_hinge" type="continuous">
+    <child link="left_wheel"/>
+    <parent link="base_link"/>
+    <axis xyz="0 1 0"/>
+    <origin rpy="0 0 0" xyz="${-chassis_x_dim/2 + (0.5*wheel_radius)} ${(chassis_y_dim/2 + (1.1*wheel_height)/2)} ${wheel_radius}"/>
+  </joint>
+
+  <joint name="right_wheel_hinge" type="continuous">
+    <child link="right_wheel"/>
+    <parent link="base_link"/>
+    <axis xyz="0 1 0"/>
+    <origin rpy="0 0 0" xyz="${-chassis_x_dim/2 + (0.5*wheel_radius)} ${-(chassis_y_dim/2 + (1.1*wheel_height)/2)} ${wheel_radius}"/>
+  </joint>
+
+  <gazebo reference="left_wheel">
+    <mu1>100</mu1>
+    <mu2>100</mu2>
+    <minDepth>0.005</minDepth>
+  </gazebo>
+  <gazebo reference="right_wheel">
+    <mu1>100</mu1>
+    <mu2>100</mu2>
+    <minDepth>0.005</minDepth>
+  </gazebo>
+  <gazebo reference="left_caster_wheel">
+    <mu1>0.0</mu1>
+    <mu2>0.0</mu2>
+    <minDepth>0.00</minDepth>
+  </gazebo>
+  <gazebo reference="right_caster_wheel">
+    <mu1>0.0</mu1>
+    <mu2>0.0</mu2>
+    <minDepth>0.00</minDepth>
+  </gazebo>
+  <gazebo>
+    <plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>50.0</updateRate>
+      <bodyName>base_link</bodyName>
+      <topicName>ground_truth/state</topicName>
+      <gaussianNoise>0.0</gaussianNoise>
+      <frameName>world</frameName>
+      <xyzOffsets>0 0 0</xyzOffsets>
+      <rpyOffsets>0 0 0</rpyOffsets>
+    </plugin>
+
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/dd_bot</robotNamespace>
+    </plugin>
+  </gazebo>
+
+
+
+  <transmission name="left_wheel_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="left_wheel_hinge">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="left_motor">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="right_wheel_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="right_wheel_hinge">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="right_motor">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+
+
+</robot>

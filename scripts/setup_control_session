@@ -1,0 +1,45 @@
+#!/bin/bash
+
+SESSION=$USER
+tmux -2 new-session -d -s $SESSION
+
+tmux new -s work -d
+tmux rename-window -t work control
+
+tmux split-window -v -t work
+tmux select-pane -t 0
+tmux send-keys "cd" C-m
+sleep 0.2
+tmux send-keys "clear" C-m
+sleep 0.2
+tmux send-keys "rostopic pub /dd_bot/traj_state std_msgs/Int16 'data:1'"
+sleep 0.4
+
+tmux split-window -h -t work
+tmux select-pane -t 1
+tmux send-keys "cd ~/catkin_ws/src/dd_bot/dd_bot_control/src/tt_mpc/" C-m
+sleep 0.4
+tmux send-keys "clear" C-m
+sleep 0.4
+tmux send-keys "python cftoc_solver.py" 
+sleep 0.2
+
+tmux select-pane -t 2
+tmux split-window -h -t work
+tmux send-keys "cd ~/catkin_ws/src/dd_bot/dd_bot_description/urdf/" C-m
+sleep 0.4
+tmux send-keys "clear" C-m
+sleep 0.4
+tmux send-keys "rosrun gazebo_ros spawn_model -file dd_bot.urdf -urdf -x 0 -y 0 -z 1 -model dd_bot" 
+sleep 0.4
+
+tmux select-pane -t 2
+tmux send-keys "cd" C-m
+sleep 0.2
+tmux send-keys "clear" C-m
+sleep 0.2
+tmux send-keys "roslaunch dd_bot dd_bot_control.launch" 
+sleep 0.2
+
+
+tmux attach-session -t work

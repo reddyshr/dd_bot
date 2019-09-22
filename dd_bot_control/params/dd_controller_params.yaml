@@ -1,0 +1,42 @@
+
+
+dd_mpc:
+  Q_flat: [1.0, 0.0, 0.0, 
+           0.0, 1.0, 0.0, 
+           0.0, 0.0, 1.0]
+
+  P_flat: [1.0, 0.0, 0.0, 
+           0.0, 1.0, 0.0, 
+           0.0, 0.0, 1.0]
+
+  R_flat: [1.0, 0.0, 
+           0.0, 1.0]
+
+  Q_dim: 3
+  P_dim: 3
+  R_dim: 2
+
+  horizon_length: 10
+  time_step: 0.1
+
+LC_traj:
+
+  a1: 0.0
+  a2: 0.0
+  w1: 0.0
+  w2: 0.0
+  del: 0.0
+
+
+wheel_velocity_controller:
+
+  control_rate_hz: 50.0
+
+  kp: 1.0
+  ki: 0.0
+  kd: 0.2
+
+dd_bot_geometry:
+
+  wheel_dist: 0.355
+  wheel_radius: 0.1
