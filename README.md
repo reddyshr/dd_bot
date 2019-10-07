@@ -1,2 +1,2 @@
 # dd_bot
-Tracking Control of Differential Drive Robot
+Trajectory Tracking Model Predictive Control of Differential Drive Robot
